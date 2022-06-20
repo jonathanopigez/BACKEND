@@ -49,12 +49,16 @@ main {
     width: 99%;
 }
 /* PAGE LOGIN */
-.box-container {
-    display: flex;
-    justify-content: space-around;
-    padding: 2%;
-    width: 95%;
-    height: auto;  
+.box-container{
+    width: 100%;
+}
+
+.container-card{
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+grid-template-rows: repeat(5, 1fr);
+grid-column-gap: 0px;
+grid-row-gap: 0px;
 }
 .login-box {
     display: flex;

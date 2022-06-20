@@ -1,3 +1,17 @@
+<?php
+ 
+session_start();
+if ($_SESSION["connecter"] != "yes") {
+header("location:login.php");
+exit();
+}
+if (date("H") < 18)
+$bienvenue = "Bonjour et bienvenue "  .
+$_SESSION["prenom_nom"];
+else
+$bienvenue = "Bonsoir et bienvenue "  .
+$_SESSION["prenom_nom"];
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -14,13 +28,15 @@
 
  
  // HEADER
-session_start();
+
  include "header.php";
+
+ include "panier.php";
 
  echo '<div class="zone-produits">';
 
 
-include "function.php";
+include "functions.php";
 $produitModel=new ModeleProduct(0);
 $produitStatement=$produitModel->RecupProduit($_GET['idProduit']);
 $produit = $produitStatement->fetchAll();
@@ -32,10 +48,10 @@ $produit = $produitStatement->fetchAll();
     echo '<img src="'.$produit[0]['PRD_PICTURE'].'"/>';
     echo '</div> ';
     echo '<h2 class="titre">'.$produit[0]['PRD_DESCRIPTION'].'</h2>';
-  
+    echo '<p class="description">'.$produit[0]['PRD_DEFINITION'].'</p>';
     echo '<h2 class="prix">'.$produit[0]['PRD_PRICE'].' </h2>';
 
-    echo '<a href="panier.php?action=ajout&amp;l=LIBELLEPRODUIT&amp;q=QUANTITEPRODUIT&amp;p=PRIXPRODUIT" onclick="window.open(this.href, \'\', 
+    echo '<a href="panier.php?action=ajout&amp;l='.$produit[0]['PRD_DESCRIPTION'].'&amp;q=1&amp;p='.$produit[0]['PRD_PRICE'].'" onclick="window.open(this.href, \'\', 
 \'toolbar=no, location=no, directories=no, status=yes, scrollbars=yes, resizable=yes, copyhistory=no, width=600, height=350\'); return false;"  class="add-to-cart btn btn-primary">Ajouter au panier</a>';
     echo '</div>';
 

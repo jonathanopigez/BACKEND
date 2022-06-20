@@ -1,158 +1,118 @@
 <?php
-require_once __DIR__ . '/include/init.php';
-require "function.php";
-$Total = 0;
-$Quantite = 0;
+if (!isset($_SESSION)){
+   session_start();
+}
 
-if (isset($_GET['action'])) {
+include_once("fonctions-panier.php");
 
-    if ($_GET['action'] == 'ajout') {
-        
-        $produitModel = new ModeleProduct(0);
-        $produitStatement = $produitModel->RecupProduit($_GET['id_produit']);
-        $produits = $produitStatement->fetchAll();
+$erreur = false;
 
-        ajouterPanier($produits[0], $_GET['quantite']);
+$action = (isset($_POST['action'])? $_POST['action']:  (isset($_GET['action'])? $_GET['action']:null )) ;
+if($action !== null)
+{
+   if(!in_array($action,array('ajout', 'suppression', 'refresh')))
+   $erreur=true;
+
+   //récupération des variables en POST ou GET
+   $l = (isset($_POST['l'])? $_POST['l']:  (isset($_GET['l'])? $_GET['l']:null )) ;
+   $p = (isset($_POST['p'])? $_POST['p']:  (isset($_GET['p'])? $_GET['p']:null )) ;
+   $q = (isset($_POST['q'])? $_POST['q']:  (isset($_GET['q'])? $_GET['q']:null )) ;
+
+   //Suppression des espaces verticaux
+   $l = preg_replace('#\v#', '',$l);
+   //On vérifie que $p est un float
+   $p = floatval($p);
+
+   //On traite $q qui peut être un entier simple ou un tableau d'entiers
+    
+   if (is_array($q)){
+      $QteArticle = array();
+      $i=0;
+      foreach ($q as $contenu){
+         $QteArticle[$i++] = intval($contenu);
+      }
+   }
+   else
+   $q = intval($q);
+    
+}
+
+if (!$erreur){
+   switch($action){
+      Case "ajout":
+         ajouterArticle($l,$q,$p);
+         break;
+
+      Case "suppression":
+         supprimerArticle($l);
+         break;
+
+      Case "refresh" :
+         for ($i = 0 ; $i < count($QteArticle) ; $i++)
+         {
+            modifierQTeArticle($_SESSION['panier']['libelleProduit'][$i],round($QteArticle[$i]));
+         }
+         break;
+
+      Default:
+         break;
+   }
+}
+
+echo '<?xml version="1.0" encoding="utf-8"?>';?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr">
+<head>
+</head>
+<body>
+
+<form method="post" action="panier.php">
+<table style="width: 400px">
+    <tr>
+        <td colspan="4">Votre panier</td>
+    </tr>
+    <tr>
+        <td>Libellé</td>
+        <td>Quantité</td>
+        <td>Prix Unitaire</td>
+        <td>Action</td>
+    </tr>
+
+
+    <?php
+    if (creationPanier())
+    {
+       $nbArticles=count($_SESSION['panier']['libelleProduit']);
+       if ($nbArticles <= 0)
+       echo "<tr><td>Votre panier est vide </ td></tr>";
+       else
+       {
+          for ($i=0 ;$i < $nbArticles ; $i++)
+          {
+             echo "<tr>";
+             echo "<td>".htmlspecialchars($_SESSION['panier']['libelleProduit'][$i])."</ td>";
+             echo "<td><input type=\"text\" size=\"4\" name=\"q[]\" value=\"".htmlspecialchars($_SESSION['panier']['qteProduit'][$i])."\"/></td>";
+             echo "<td>".htmlspecialchars($_SESSION['panier']['prixProduit'][$i])."</td>";
+             echo "<td><a href=\"".htmlspecialchars("panier.php?action=suppression&l=".rawurlencode($_SESSION['panier']['libelleProduit'][$i]))."\">Supprimer</a></td>";
+             echo "</tr>";
+          }
+
+          echo "<tr><td colspan=\"2\"> </td>";
+          echo "<td colspan=\"2\">";
+          echo "Total : ".MontantGlobal();
+          echo "</td></tr>";
+
+          echo "<tr><td colspan=\"4\">";
+          echo "<input type=\"submit\" value=\"Modifier\"/>";
+          echo "<input type=\"hidden\" name=\"action\" value=\"refresh\"/>";
+          echo "</td></tr>";
+
+          echo "<a href='session.php'>Retour Accueil</a>";
+
+       }
     }
-}
-
-if (empty($_SESSION['panier'])) {
-
-    setFlashMessage('Le panier est vide');
-}
-
-if (isset($_POST['commander'])) {
-
-    // on ouvre une autre page pour saisie adresse, choix paiement, choix transporteur 
-    // pour faire un
-    //Insert dans la table des commandes
-
-
-
-    // INSERT INTO detail_commande 
-
-    //     $stmt = $pdo->prepare($query);
-
-    //     foreach($_SESSION['panier'] as $produitId => $produit){
-    //         $stmt->execute([
-    //             ':commande_id' => $commandeId,
-    //             ':produit_id' => $produitId,
-    //             ':prix' => $produit['prix'],
-    //             ':quantite' => $produit['quantite']
-    //         ]);
-    //     }
-
-    //     $_SESSION['panier']=[];
-    //     setFlashMessage('La commande est enregistré');
-
-
-}
-
-
-
-if (isset($_POST['modifierQuantite'])) {
-    modifierQuantitePanier($_GET['id_produit'], $_POST['quantite']);
-}
-
-
-
-
-
-require __DIR__ . '/layout/top.php';
-/*
- * Remplacer l'affichage de la quantité par un formulaire avec:
- * un <input type="number"> pour la quantité
- * un <input type="hidden"> pour avoir l'id du produit
- * dont on va modifier la quantité
- * un bouton submit
- * Faire une fonction modifierQuantitePanier($prduitID, $quantite)
- * qui modifie la quantité du produit si c'est pas 0,
- * et qui le supprime du panier sinon
- * Appeler cette fonction quand un des formulaires est envoyé
- */
-?>
-<h1>Panier</h1>
-
-<?php
-if (empty($_SESSION['panier'])) :
-?>
-    <div class="alert alert-info">
-        Le panier est vide
-    </div>
-<?php
-else :
-?>
-    <!-- le tableau HTML ici -->
-    <table class="table_cat th_produits table table-striped">
-        <tr>
-            <th>Nom</th>
-            <th>Prix (unité)</th>
-            <th>Quantité</th>
-            <th>Total</th>
-        </tr>
-        <?php
-
-
-        foreach ($_SESSION['panier'] as $produitId => $item) :
-            //$id_stm = $pdo->query('SELECT nom FROM categories WHERE id='. $item['id'].' ');
-            //$produit_cat = $id_stm->fetchAll();
-            //dump($produit_cat);
-
-            $Total_produit = ($item['prix']) * $item['quantite'];
-            //dump($Total_produit);
-            $Total += $Total_produit;
-
-
-        ?>
-            <tr>
-                <td><?= $item['nom']; ?></td>
-                <td><?= prixFR($item['prix']) ?></td>
-                <!--<td><?= $item['quantite']; ?></td>-->
-                <td class="cardQ-formTd">
-                    <form method="post" class="form-inline">
-                        <input class="panier_quant" type="number" name="quantite" min="0" value="<?= $item['quantite']; ?>">
-                        <input type="hidden" name="id_produit" value="<?= $produitId; ?>">
-                        <div style="margin-top: 20px" class="form-btn-group text-right">
-                            <button type="submit" class="btn btn-primary" name="modifierQuantite">
-                                Modifier
-                            </button>
-                        </div>
-                    </form>
-                </td>
-                <td><?= prixFR($Total_produit); ?></td>
-            </tr>
-
-
-        <?php
-        //dump($produitId); //dump($item['id']);
-        endforeach;
-        ?>
-        <tr>
-            <th colspan="3" style="text-align: right">Total :</td>
-            <td style="font-weight:bold"><?= prixFR(totalPanier()); ?></td>
-        </tr>
-    </table>
-    <?php
-    if (!isUserConnected()) :
     ?>
-        <div class="alert alert-info">
-            Vous devez vous connecter ou vous inscrire pour valider la commande
-        </div>
-    <?php
-    else :
-    ?>
-        <form method="post">
-            <p class="text-right">
-                <button type="submit" name="commander" class="btn btn-primary valid_commande">
-                    Valider la commande
-                </button>
-            </p>
-        </form>
-<?php
-    endif;
-
-endif;
-?>
-<?php
-require __DIR__ . '/layout/bottom.php';
-?>
+</table>
+</form>
+</body>
+</html>

@@ -1,59 +1,93 @@
-<!DOCTYPE html>
-<html lang="fr">
-
-<head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" description="menuiserie intranet">
-        <link rel="stylesheet" href="CSS/style.css">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-        <title>Accueil </title>
-</head>
-
-<body>
-
-    <?php
- session_start();
- include "header.php";
- $_SESSION['login'] = '';
- $_SESSION['password'] = '';
- if (isset($_POST['submit'])){
- // bouton submit pressé, je traite le formulaire
- $login = (isset($_POST['login'])) ? $_POST['login'] : '';
- $pass = (isset($_POST['pass'])) ? $_POST['pass'] : '';
- if (($login == "Matthieu") && ($pass == "NewsletTux")){
- $_SESSION['login'] = "Matthieu";
- $_SESSION['password'] = "NewsletTux";
- echo '<a href="accueil.php" title="Accueil de la section
-membre">Accueil</a>';
- }
- else{
- // une erreur de saisie ...?
- echo '<p style="color:#FF0000; font-weight:bold;">Erreur de
-connexion.</p>';
- }
- }; // fin if (isset($_POST['submit']))
- if (!isset($_POST['submit']))
- {
- // Si bouton submit non pressé, alors j'affiche le
-//formulaire
- echo '<form id="conn" method="post" action="">'."\n";
- echo ' <p><label for="login">Login :</label><input
-type="text" id="login" name="login" /></p>'."\n";
- echo ' <p><label for="pass">Mot de Passe
-:</label><input type="password" id="pass" name="pass"
-/></p>'."\n";
- echo ' <p><input type="submit" id="submit"
-name="submit" value="Connexion" /></p>'."\n";
- echo '</form>'."\n";
- };
-  // fin if (!isset($_POST['submit'])))
-  include "footer.php";
+<?php
+ 
+session_start();
+include("infos.php");
+@$valider = $_POST["valider"];
+$erreur = "";
+if (isset($valider)) {
+include("connexion.php");
+$verify = $pdo->prepare("select * from t_d_user_usr where username=? and USR_PASSWORD=? limit 1");
+$verify->execute(array($pseudo, $pass_crypt));
+$user = $verify->fetchAll();
+if (count($user) > 0) {
+$_SESSION["prenom_nom"] = $pseudo;
+// ucfirst(strtolower($user[0]["prenom"])) .
+// " "  .  strtoupper($user[0]["nom"]);
+$_SESSION["connecter"] = "yes";
+header("location:session.php");
+} else
+$erreur = "Mauvais login ou mot de passe!";
+}
 ?>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+ 
+<!DOCTYPE  html>
+<html>
+<head>
+<meta  charset="utf-8"  />
+<style>
+* {
+font-family: arial;
+}
+body {
+margin: 20px;
+}
+ 
+form {
+position: absolute;
+top: 50%;
+left: 50%;
+margin-left: -150px;
+margin-top: -100px;
+}
+h1 {
+text-align: center;
+color: #FFFAFA;
+background: gray;
+}
+ 
+input[type=submit] {
+border: solid  1px  violet;
+margin-bottom: 10px;
+float: right;
+padding: 15px;
+outline: none;
+border-radius: 7px;
+width: 120px;
+}
+input[type=text],
+[type=password] {
+border: solid  1px  violet;
+margin-bottom: 10px;
+padding: 16px;
+outline: none;
+border-radius: 7px;
+width: 300px;
+}
+.erreur {
+text-align: center;
+color: red;
+margin-top: 10px;
+}
+ 
+a {
+font-size: 14pt;
+color: blue;
+text-decoration: none;
+font-weight: normal;
+}
+a:hover {
+text-decoration: underline;
+}
+</style>
+</head>
+<body  onLoad="document.fo.login.focus()">
+<h1>Authentification</h1>
+<div  class="erreur"><?php  echo  $erreur  ?></div>
+<form  name="form"  method="post"  action="">
+<input  type="text"  name="pseudo"  placeholder="Votre Pseudo"  /><br  />
+<input  type="password"  name="password"  placeholder="Mot de passe"  /><br  />
+<input  type="submit"  name="valider"  value="S'authentifier"  />
+<a  href="inscription.php">Créer votre Compte</a>
+</form>
 </body>
-
-
-
 </html>
