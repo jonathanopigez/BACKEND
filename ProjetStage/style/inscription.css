@@ -1,0 +1,87 @@
+  body{
+      
+        background: #DDD7E7;
+        
+     
+    }
+
+    .login-form{
+        position:absolute;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        width:50%;
+        top: 0;
+        bottom:0;
+        left: 0;
+        right: 0;
+        
+    }
+    form{
+        width:60%;
+        background: #fff;
+        padding:30px;
+        border-radius:3px;
+        z-index: 1;
+        border-radius: 12px;
+       
+        
+    }
+ 
+
+    label{
+        margin-bottom: 10px;
+    }
+
+    a{
+        text-decoration: none;
+    }
+
+    input{
+        margin-bottom:10px;
+    }
+
+    select{
+        padding:5px;
+        border-radius:3px;
+        color: #77757C;
+        border-color: #77757C;
+    }
+    .divBtn button{
+        width: 100%;
+        background: #85D673;
+        border: none;
+        font-size:1.2em;
+        padding:10px;
+        color:white;
+        transition:.4s;
+        margin-bottom:10px;
+    }
+
+    .divBtn a:hover{
+        transition:.4s;
+        color:#E16D1D;
+        
+    }
+    .paysForm{
+        display:flex;
+        align-items:center;
+        gap:15px;
+    }
+    .paysForm select{
+       width:40%;
+    }
+    .paysForm input{
+       width:40%;
+    }
+    .flagsvg{
+        height:30px;
+    }
+    #flagDiv{
+        display:flex;
+        flex-direction:row;
+    }
+    .flagdiv{
+        display:flex;
+        flex-direction:row;
+    }
